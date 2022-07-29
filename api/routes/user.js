@@ -4,6 +4,16 @@ const CryptoJS = require('crypto-js');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
 
+function createToken(userId) {
+	return jwt.sign(
+		{
+			id: userId,
+		},
+		process.env.JWT_SEC,
+		{ expiresIn: '3d' }
+	);
+}
+
 router.post('/signup', async (req, res) => {
 	if (!req.body.email || !req.body.password) {
 		res.json('All fields must be filled');
@@ -12,7 +22,7 @@ router.post('/signup', async (req, res) => {
 	if (!validator.isEmail(req.body.email)) {
 		res.json('Email is not valid');
 	}
-	//	if (!validator.isStrongPassword(password)) {
+
 	//		throw Error('Password not strong enough');
 	//	}
 
@@ -34,13 +44,7 @@ router.post('/signup', async (req, res) => {
 
 		try {
 			const savedUser = await newUser.save();
-			const accessToken = jwt.sign(
-				{
-					id: savedUser.id,
-				},
-				process.env.JWT_SEC,
-				{ expiresIn: '3d' }
-			);
+			const accessToken = createToken(savedUser._id);
 
 			const { password, ...others } = savedUser._doc;
 			res.status(201).json({ ...others, accessToken });
@@ -67,13 +71,7 @@ router.post('/login', async (req, res) => {
 		originalPassword !== req.body.password &&
 			res.status(401).json('Wrong Credentials!');
 
-		const accessToken = jwt.sign(
-			{
-				id: user._id,
-			},
-			process.env.JWT_SEC,
-			{ expiresIn: '3d' }
-		);
+		const accessToken = createToken(user._id);
 
 		const { password, ...others } = user._doc;
 
@@ -82,5 +80,4 @@ router.post('/login', async (req, res) => {
 		res.status(500).json(error);
 	}
 });
-
 module.exports = router;

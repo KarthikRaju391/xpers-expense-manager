@@ -1,8 +1,5 @@
 const mongoose = require('mongoose');
 
-// create a mongoDB schema for the categories collection which is linked to the
-// userId and walletId fields
-
 const CategorySchema = new mongoose.Schema(
 	{
 		userId: { type: String, required: true },
